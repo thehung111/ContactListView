@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+     <TextView android:id="@+id/sectionTextView" 
+        android:layout_width="fill_parent" 
+        android:paddingLeft="8dip"
+        android:layout_marginBottom="3dip"
+        android:layout_height="wrap_content"
+		android:text="A" 
+		android:textStyle="bold"
+		android:textSize="18sp"
+		android:textColor="#ffffff"
+		android:background="#496491"
+		android:visibility="gone"
+	/>
+     
+     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content" 
+	    android:id="@+id/infoRowContainer"
+	>
+	
+	    <ImageView
+	        xmlns:android="http://schemas.android.com/apk/res/android"
+	        android:id="@+id/userImg"
+	        android:layout_width="44dip"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_alignParentTop="true"
+	        android:layout_marginLeft="5dip"
+	        android:layout_marginTop="5dip"
+	        android:contentDescription="image"
+	        android:focusable="false"
+	        android:scaleType="fitCenter"
+	        android:src="@drawable/user"
+	        android:visibility="visible" />
+	    
+	    <TextView
+	        android:id="@+id/nameView"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content" 
+	        android:layout_alignParentTop="true"
+	        android:layout_toRightOf="@id/userImg"
+	        android:textStyle="bold"
+	        android:textSize="24sp"
+	        android:text="Username" />
+	  
+	
+	</RelativeLayout>
+
+</LinearLayout>
