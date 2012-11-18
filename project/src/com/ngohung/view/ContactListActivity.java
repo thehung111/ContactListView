@@ -69,7 +69,12 @@ public class ContactListActivity extends Activity implements TextWatcher {
 			public void onItemClick(AdapterView parent, View v, int position,
 					long id) {
 				
-				Toast.makeText(ContactListActivity.this, "Nickname: " + contactList.get(position).getItemForIndex() , Toast.LENGTH_SHORT).show();
+				float lastTouchX = listview.getScroller().getLastTouchDownEventX();
+				if(lastTouchX < 45 && lastTouchX > -1){
+					Toast.makeText(ContactListActivity.this, "User image is clicked ( " + contactList.get(position).getItemForIndex()  + ")", Toast.LENGTH_SHORT).show();
+				}
+				else
+					Toast.makeText(ContactListActivity.this, "Nickname: " + contactList.get(position).getItemForIndex() , Toast.LENGTH_SHORT).show();
 			}
 		});
 		
