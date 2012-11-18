@@ -18,6 +18,31 @@ import android.widget.SectionIndexer;
 // rewrite some sections to make it more customizable
 public class IndexScroller {
 	
+	/**
+	 * Add additional properties for customization
+	 * 
+	 */
+	// Hung - store the last touch down eventX and eventY so that we can detect where user click on list view
+	// indexscroller will override touch event of listview, so onclicklistener will not work
+	private float lastTouchDownEventX = -1;
+	private float lastTouchDownEventY = -1;
+	
+	// whether to autohide the scroller
+	// false will always show the index bar
+	// true will hide the scrollbar at first, but slowly show it later
+	private boolean autoHide = false; 
+	
+	// minor optimizations
+	private Paint indexbarContainerPaint = new Paint(); // paint for indexbar container
+	private Paint indexPaint = new Paint();
+	
+	private boolean showIndexContainer = false; // whether to show the outer index container
+	private int indexbarContainerBgColor = Color.BLACK;
+	private int indexPaintColor = Color.WHITE; // color for section title
+	
+	
+	/// end additional properties
+	
 	private float mIndexbarWidth;
 	private float mIndexbarMargin;
 	private float mPreviewPadding;
@@ -39,9 +64,7 @@ public class IndexScroller {
 	private static final int STATE_SHOWN = 2;
 	private static final int STATE_HIDING = 3;
 	
-	// Hung - store the last touch down eventX so that we can detect where user click on list view
-	private float lastTouchDownEventX = -1;
-	
+
 	public IndexScroller(Context context, ListView lv) {
 		mDensity = context.getResources().getDisplayMetrics().density;
 		mScaledDensity = context.getResources().getDisplayMetrics().scaledDensity;
@@ -54,6 +77,13 @@ public class IndexScroller {
 		mPreviewPadding = 5 * mDensity;
 		
 		
+		// customization of paint colors
+		// outer container
+		indexbarContainerPaint.setAntiAlias(true);
+		
+		// letter in section
+		indexPaint.setAntiAlias(true);
+		indexPaint.setTextSize(12 * mScaledDensity);
 	}
 	
 	public IndexScroller(Context context, ListView lv, SectionIndexer indexer ) {
@@ -63,62 +93,70 @@ public class IndexScroller {
 		
 	}
 
+	
+	// draw the outer rounded container
+	public void drawIndexBarContainer(Canvas canvas){
+		indexbarContainerPaint.setColor(indexbarContainerBgColor);
+		indexbarContainerPaint.setAlpha((int) (64 * mAlphaRate)); // opacity
+		canvas.drawRoundRect(mIndexbarRect, 5 * mDensity, 5 * mDensity, indexbarContainerPaint);
+	}
+	
+	public void drawSections(Canvas canvas){
+		indexPaint.setColor(indexPaintColor);
+		indexPaint.setAlpha((int) (255 * mAlphaRate));
+		
+		float sectionHeight = (mIndexbarRect.height() - 2 * mIndexbarMargin) / mSections.length;
+		float paddingTop = (sectionHeight - (indexPaint.descent() - indexPaint.ascent())) / 2;
+		
+		// draw the section letters
+		for (int i = 0; i < mSections.length; i++) {
+			float paddingLeft = (mIndexbarWidth - indexPaint.measureText(mSections[i])) / 2;
+			canvas.drawText(mSections[i], mIndexbarRect.left + paddingLeft
+					, mIndexbarRect.top + mIndexbarMargin + sectionHeight * i + paddingTop - indexPaint.ascent(), indexPaint);
+		}
+	}
+	
+	public void drawCurrentSection(Canvas canvas){
+		if (mCurrentSection >= 0) {
+			// Preview is shown when mCurrentSection is set
+			// mCurrentSection is the letter that is being pressed
+			// this will draw the big preview text on top of the listview
+			Paint previewPaint = new Paint();
+			previewPaint.setColor(Color.BLACK);
+			previewPaint.setAlpha(96);
+			previewPaint.setAntiAlias(true);
+			previewPaint.setShadowLayer(3, 0, 0, Color.argb(64, 0, 0, 0));
+			
+			Paint previewTextPaint = new Paint();
+			previewTextPaint.setColor(Color.WHITE);
+			previewTextPaint.setAntiAlias(true);
+			previewTextPaint.setTextSize(50 * mScaledDensity);
+			
+			float previewTextWidth = previewTextPaint.measureText(mSections[mCurrentSection]);
+			float previewSize = 2 * mPreviewPadding + previewTextPaint.descent() - previewTextPaint.ascent();
+			RectF previewRect = new RectF((mListViewWidth - previewSize) / 2
+					, (mListViewHeight - previewSize) / 2
+					, (mListViewWidth - previewSize) / 2 + previewSize
+					, (mListViewHeight - previewSize) / 2 + previewSize);
+			
+			canvas.drawRoundRect(previewRect, 5 * mDensity, 5 * mDensity, previewPaint);
+			canvas.drawText(mSections[mCurrentSection], previewRect.left + (previewSize - previewTextWidth) / 2 - 1
+					, previewRect.top + mPreviewPadding - previewTextPaint.ascent() + 1, previewTextPaint);
+		}
+	}
+	
+	
 	public void draw(Canvas canvas) {
 		if (mState == STATE_HIDDEN)
 			return;
 		
-		// mAlphaRate determines the rate of opacity
-		// this will draw the rounded rect for the whole index
-		Paint indexbarPaint = new Paint();
-		indexbarPaint.setColor(Color.BLACK);
-		
-		indexbarPaint.setAlpha((int) (64 * mAlphaRate)); // opacity
-	
-		indexbarPaint.setAntiAlias(true);
-		canvas.drawRoundRect(mIndexbarRect, 5 * mDensity, 5 * mDensity, indexbarPaint);
+		if(showIndexContainer)
+			drawIndexBarContainer(canvas);
 		
 		if (mSections != null && mSections.length > 0) {
-			// Preview is shown when mCurrentSection is set
-			// mCurrentSection is the letter that is being pressed
-			// this will draw the big preview text on top of the listview
-			if (mCurrentSection >= 0) {
-				Paint previewPaint = new Paint();
-				previewPaint.setColor(Color.BLACK);
-				previewPaint.setAlpha(96);
-				previewPaint.setAntiAlias(true);
-				previewPaint.setShadowLayer(3, 0, 0, Color.argb(64, 0, 0, 0));
-				
-				Paint previewTextPaint = new Paint();
-				previewTextPaint.setColor(Color.WHITE);
-				previewTextPaint.setAntiAlias(true);
-				previewTextPaint.setTextSize(50 * mScaledDensity);
-				
-				float previewTextWidth = previewTextPaint.measureText(mSections[mCurrentSection]);
-				float previewSize = 2 * mPreviewPadding + previewTextPaint.descent() - previewTextPaint.ascent();
-				RectF previewRect = new RectF((mListViewWidth - previewSize) / 2
-						, (mListViewHeight - previewSize) / 2
-						, (mListViewWidth - previewSize) / 2 + previewSize
-						, (mListViewHeight - previewSize) / 2 + previewSize);
-				
-				canvas.drawRoundRect(previewRect, 5 * mDensity, 5 * mDensity, previewPaint);
-				canvas.drawText(mSections[mCurrentSection], previewRect.left + (previewSize - previewTextWidth) / 2 - 1
-						, previewRect.top + mPreviewPadding - previewTextPaint.ascent() + 1, previewTextPaint);
-			}
-			
-			Paint indexPaint = new Paint();
-			indexPaint.setColor(Color.WHITE);
-			indexPaint.setAlpha((int) (255 * mAlphaRate));
-			indexPaint.setAntiAlias(true);
-			indexPaint.setTextSize(12 * mScaledDensity);
-			
-			// draw the letter
-			float sectionHeight = (mIndexbarRect.height() - 2 * mIndexbarMargin) / mSections.length;
-			float paddingTop = (sectionHeight - (indexPaint.descent() - indexPaint.ascent())) / 2;
-			for (int i = 0; i < mSections.length; i++) {
-				float paddingLeft = (mIndexbarWidth - indexPaint.measureText(mSections[i])) / 2;
-				canvas.drawText(mSections[i], mIndexbarRect.left + paddingLeft
-						, mIndexbarRect.top + mIndexbarMargin + sectionHeight * i + paddingTop - indexPaint.ascent(), indexPaint);
-			}
+		
+			drawCurrentSection(canvas);
+			drawSections(canvas);
 		}
 	}
 	
@@ -126,7 +164,7 @@ public class IndexScroller {
 		switch (ev.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			lastTouchDownEventX = ev.getX(); // Hung capture the event for later use in listview item click
-			//Log.i("IndexScroller", "Touch down event " + " event.X " + ev.getX() + ", event Y " + ev.getY() );
+			lastTouchDownEventY = ev.getY();
 			
 			// If down event occurs inside index bar region, start indexing
 			if (mState != STATE_HIDDEN && contains(ev.getX(), ev.getY())) {
@@ -156,9 +194,12 @@ public class IndexScroller {
 				mIsIndexing = false;
 				mCurrentSection = -1;
 			}
-			// Hung - disable hiding state
-//			if (mState == STATE_SHOWN)
-//				setState(STATE_HIDING);
+			// only hide if state is auto hiding
+			if(autoHide)
+			{
+				if (mState == STATE_SHOWN)
+					setState(STATE_HIDING);
+			}
 			break;
 		}
 		return false;
@@ -244,14 +285,6 @@ public class IndexScroller {
 		mHandler.sendEmptyMessageAtTime(0, SystemClock.uptimeMillis() + delay);
 	}
 	
-	public float getLastTouchDownEventX() {
-		return lastTouchDownEventX;
-	}
-
-	public void setLastTouchDownEventX(float lastTouchDownEventX) {
-		this.lastTouchDownEventX = lastTouchDownEventX;
-	}
-
 	private Handler mHandler = new Handler() {
 
 		@Override
@@ -273,7 +306,10 @@ public class IndexScroller {
 			case STATE_SHOWN:
 				// If no action, hide automatically
 				// Hung - comment out this to disable hiding
-//				setState(STATE_HIDING);
+				if(autoHide)
+				{
+					setState(STATE_HIDING);
+				}
 				break;
 			case STATE_HIDING:
 				// Fade out effect
@@ -290,4 +326,54 @@ public class IndexScroller {
 		}
 		
 	};
+	
+	public float getLastTouchDownEventX() {
+		return lastTouchDownEventX;
+	}
+
+	public void setLastTouchDownEventX(float lastTouchDownEventX) {
+		this.lastTouchDownEventX = lastTouchDownEventX;
+	}
+
+	public float getLastTouchDownEventY() {
+		return lastTouchDownEventY;
+	}
+
+	public void setLastTouchDownEventY(float lastTouchDownEventY) {
+		this.lastTouchDownEventY = lastTouchDownEventY;
+	}
+
+	public boolean isAutoHide() {
+		return autoHide;
+	}
+
+	public void setAutoHide(boolean autoHide) {
+		this.autoHide = autoHide;
+	}
+
+	public boolean isShowIndexContainer() {
+		return showIndexContainer;
+	}
+
+	public void setShowIndexContainer(boolean showIndexContainer) {
+		this.showIndexContainer = showIndexContainer;
+	}
+
+	public int getIndexbarContainerBgColor() {
+		return indexbarContainerBgColor;
+	}
+
+	public void setIndexbarContainerBgColor(int indexbarContainerBgColor) {
+		this.indexbarContainerBgColor = indexbarContainerBgColor;
+	}
+
+	public int getIndexPaintColor() {
+		return indexPaintColor;
+	}
+
+	public void setIndexPaintColor(int indexPaintColor) {
+		this.indexPaintColor = indexPaintColor;
+	}
+	
+	
 }

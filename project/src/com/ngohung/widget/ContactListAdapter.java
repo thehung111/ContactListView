@@ -53,12 +53,11 @@ public class ContactListAdapter extends ArrayAdapter<ContactItemInterface>{
 		    // if first item then show the header
 	    	
 		    if(indexer.isFirstItemInSection(position)){
-		    	if(item.getItemForIndex()!=null && item.getItemForIndex().trim().length() > 0)
-		    	{
-		    		String firstLetter = String.valueOf(item.getItemForIndex().trim().charAt(0) ).toUpperCase();
-			    	sectionTextView.setText( firstLetter);
-		    		sectionTextView.setVisibility(View.VISIBLE);	
-		    	}
+		    	
+		    	String sectionTitle = indexer.getSectionTitle(item.getItemForIndex());
+		    	sectionTextView.setText(sectionTitle);
+		    	sectionTextView.setVisibility(View.VISIBLE);
+		    	
 		    }
 		    else
 		    	sectionTextView.setVisibility(View.GONE);
@@ -81,7 +80,7 @@ public class ContactListAdapter extends ArrayAdapter<ContactItemInterface>{
 		
 		ContactItemInterface item = getItem(position);
 		
-		Log.i("ContactListAdapter", "item: " + item.getItemForIndex());
+		//Log.i("ContactListAdapter", "item: " + item.getItemForIndex());
 		
 		if (convertView == null) {
 	    	parentView = new LinearLayout(getContext()); // Assumption: the resource parent id is a linear layout

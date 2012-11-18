@@ -10,11 +10,11 @@ import android.widget.SectionIndexer;
 public class ContactsSectionIndexer implements SectionIndexer {
 
 	private static String OTHER = "#";
-	private static String[] mSections = { "A", "B", "C" , "D", "E" ,"F", "G" , "H" , "I", 
+	private static String[] mSections = { OTHER, "A", "B", "C" , "D", "E" ,"F", "G" , "H" , "I", 
 			"J", "K", "L", "M" , "N" , "O", "P" ,"Q" ,"R" ,"S" , 
-			"T" ,"U" , "V", "W", "X", "Y", "Z" , OTHER } ;
+			"T" ,"U" , "V", "W", "X", "Y", "Z"  } ;
 
-	private static int OTHER_INDEX = mSections.length - 1; // index of other in the mSections array
+	private static int OTHER_INDEX = 0 ; // index of other in the mSections array
 	
 	
 	private int[] mPositions; // store the list of starting position index for each section
@@ -33,6 +33,43 @@ public class ContactsSectionIndexer implements SectionIndexer {
 //		}
 	}
 	
+	
+	public String getSectionTitle(String indexableItem){
+		int sectionIndex = getSectionIndex(indexableItem);
+		return mSections[sectionIndex];
+	}
+	
+	// return which section this item belong to
+	public int getSectionIndex(String indexableItem){
+		if( indexableItem == null )
+		{
+			return OTHER_INDEX;
+		}
+		
+		indexableItem = indexableItem.trim();
+		String firstLetter = OTHER;
+		
+		if(indexableItem.length() == 0){
+			return OTHER_INDEX;
+		}
+		else
+		{
+			// get the first letter
+			firstLetter = String.valueOf(indexableItem.charAt(0) ).toUpperCase();
+		}
+		
+		int sectionCount = mSections.length;
+		for(int i = 0 ; i < sectionCount ; i++ ){
+			if( mSections[i].equals(firstLetter) )
+			{
+				return i;
+			}
+		}
+		
+		return OTHER_INDEX;
+		
+	}
+	
 	// initialize the position index
 	public void initPositions(List<ContactItemInterface> contacts)  {
 		
@@ -46,43 +83,11 @@ public class ContactsSectionIndexer implements SectionIndexer {
 		
 		for(ContactItemInterface contact: contacts){
 			
-			boolean found = false;
-			int foundIndex = -1;
-			
 			String indexableItem = contact.getItemForIndex();
-			if( indexableItem == null )
-			{
-				indexableItem = "";
-			}
+			int sectionIndex = getSectionIndex(indexableItem); // find out which section this item belong to
 			
-			String firstLetter = OTHER;
-			
-			indexableItem = indexableItem.trim();
-			if(indexableItem.length() == 0){
-				// put this in other category
-				firstLetter = OTHER; // put this in other category
-			}
-			else
-			{
-				// get the first letter
-				firstLetter = String.valueOf(indexableItem.charAt(0) ).toUpperCase();
-			}
-			
-			for(int i = 0 ; i < sectionCount ; i++ ){
-				if( mSections[i].equals(firstLetter) )
-				{
-					foundIndex = i;
-					found = true;
-				}
-			}
-			
-			// if not found in the alphabet then set it to the #
-			if(!found){
-				foundIndex = OTHER_INDEX;
-			}
-			
-			if(mPositions[foundIndex] == -1) // if not set before, then do this, otherwise just ignore
-				mPositions[foundIndex] = itemIndex;
+			if(mPositions[sectionIndex] == -1) // if not set before, then do this, otherwise just ignore
+				mPositions[sectionIndex] = itemIndex;
 			
 			itemIndex++;
 			

@@ -3,6 +3,7 @@ package com.ngohung.widget;
 import android.widget.ListView;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -10,11 +11,15 @@ import android.widget.ListAdapter;
 
 public class ContactListView extends ListView{
 
-	private boolean mIsFastScrollEnabled = false;
-	private IndexScroller mScroller = null;
-	private GestureDetector mGestureDetector = null;
-	private boolean inSearchMode = false; // whether is in search mode
-
+	protected boolean mIsFastScrollEnabled = false;
+	protected IndexScroller mScroller = null;
+	protected GestureDetector mGestureDetector = null;
+	
+	// additional customization
+	protected boolean inSearchMode = false; // whether is in search mode
+	protected boolean autoHide = false; // alway show the scroller
+	
+	
 	public ContactListView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
@@ -32,6 +37,18 @@ public class ContactListView extends ListView{
 	public boolean isFastScrollEnabled() {
 		return mIsFastScrollEnabled;
 	}
+	
+	// override this if necessary for custom scroller
+	public void createScroller(){
+		mScroller = new IndexScroller(getContext(), this);
+		mScroller.setAutoHide(autoHide);
+		mScroller.setShowIndexContainer(true);
+	
+		if(autoHide)
+			mScroller.hide();
+		else
+			mScroller.show();
+	}
 
 	@Override
 	public void setFastScrollEnabled(boolean enabled) {
@@ -39,8 +56,7 @@ public class ContactListView extends ListView{
 		if (mIsFastScrollEnabled) {
 			if (mScroller == null)
 			{
-				mScroller = new IndexScroller(getContext(), this);
-				mScroller.show(); // Hung - show scrollbar right away
+				createScroller();
 			}
 		} else {
 			if (mScroller != null) {

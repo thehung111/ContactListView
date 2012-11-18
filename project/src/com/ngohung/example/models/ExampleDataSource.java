@@ -39,7 +39,9 @@ public class ExampleDataSource {
 		 list.add(new ExampleContactItem("Joline" , "Joline Borgmann" ) );
 		 list.add(new ExampleContactItem("Neida" , " Neida Su" ) );
 		 
-	
+		 list.add(new ExampleContactItem("1111" , "1111 xxxx" ) );
+		 list.add(new ExampleContactItem("7777" , "7777 xxxx" ) );
+		 list.add(new ExampleContactItem("5555" , "5555 xxxx" ) );
 		
 		 
 		 return list;

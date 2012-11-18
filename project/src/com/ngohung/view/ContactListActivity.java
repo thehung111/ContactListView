@@ -27,7 +27,7 @@ import android.widget.Toast;
 
 public class ContactListActivity extends Activity implements TextWatcher {
 
-	private ContactListView listview;
+	private ExampleContactListView listview;
 	
 	private EditText searchBox;
 	private String searchString;
@@ -57,7 +57,7 @@ public class ContactListActivity extends Activity implements TextWatcher {
 		
 		ExampleContactAdapter adapter = new ExampleContactAdapter(this, R.layout.example_contact_item, contactList);
 		
-		listview = (ContactListView) this.findViewById(R.id.listview);
+		listview = (ExampleContactListView) this.findViewById(R.id.listview);
 		listview.setFastScrollEnabled(true);
 		listview.setAdapter(adapter);
 		
