@@ -118,6 +118,9 @@ public class IndexScroller {
 	
 	public void drawCurrentSection(Canvas canvas){
 		if (mCurrentSection >= 0) {
+			
+			//Log.i("IndexScroller", "current section: " + mCurrentSection);
+			
 			// Preview is shown when mCurrentSection is set
 			// mCurrentSection is the letter that is being pressed
 			// this will draw the big preview text on top of the listview

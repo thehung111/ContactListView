@@ -33,6 +33,7 @@ public class ContactListActivity extends Activity implements TextWatcher {
 	private String searchString;
 	
 	private Object searchLock = new Object();
+	boolean inSearchMode = false;
 	
 	private final static String TAG = "com.ngohung.view.ContactListActivity";
 	
@@ -68,13 +69,14 @@ public class ContactListActivity extends Activity implements TextWatcher {
 			@Override
 			public void onItemClick(AdapterView parent, View v, int position,
 					long id) {
+				List<ContactItemInterface> searchList = inSearchMode ? filterList : contactList ;
 				
 				float lastTouchX = listview.getScroller().getLastTouchDownEventX();
 				if(lastTouchX < 45 && lastTouchX > -1){
-					Toast.makeText(ContactListActivity.this, "User image is clicked ( " + contactList.get(position).getItemForIndex()  + ")", Toast.LENGTH_SHORT).show();
+					Toast.makeText(ContactListActivity.this, "User image is clicked ( " + searchList.get(position).getItemForIndex()  + ")", Toast.LENGTH_SHORT).show();
 				}
 				else
-					Toast.makeText(ContactListActivity.this, "Nickname: " + contactList.get(position).getItemForIndex() , Toast.LENGTH_SHORT).show();
+					Toast.makeText(ContactListActivity.this, "Nickname: " + searchList.get(position).getItemForIndex() , Toast.LENGTH_SHORT).show();
 			}
 		});
 		
@@ -117,7 +119,7 @@ public class ContactListActivity extends Activity implements TextWatcher {
     
 	private class SearchListTask extends AsyncTask<String, Void, String> {
 
-		boolean inSearchMode = false;
+		
 		
 		@Override
 		protected String doInBackground(String... params) {
